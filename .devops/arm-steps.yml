@@ -1,0 +1,19 @@
+steps:
+
+- task: DownloadBuildArtifacts@0
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    artifactName: 'arm'
+    downloadPath: '$(System.DefaultWorkingDirectory)'
+
+- task: AzureResourceGroupDeployment@2
+  displayName: 'ARM Deploy ${{ parameters.environment }}'
+  inputs:
+    azureSubscription: ${{ parameters.serviceConnection }}
+    resourceGroupName: 'project-name-${{ parameters.environment }}-rg' 
+    location: 'Australia Southeast'
+    csmFile: '$(System.DefaultWorkingDirectory)/deploy/template.json'
+    csmParametersFile: '$(System.DefaultWorkingDirectory)/deploy/parameters.${{ parameters.environment }}.json'
+    overrideParameters: -sqlAdministratorPassword "$(sqlAdministratorPassword)"'
+    deploymentOutputs: armoutputs

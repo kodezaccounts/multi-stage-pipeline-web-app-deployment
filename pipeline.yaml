@@ -1,0 +1,54 @@
+trigger:
+  branches:
+    include:
+      - '*'
+
+variables:
+  DevSubscriptionConnection: 'kodez-partner-subscription'
+  # System.Debug: true
+
+stages:
+- stage: Build_And_Publish
+  jobs:
+  - job: Build_And_Package_Function_Apps
+    pool:
+      vmImage: 'windows-2019'  
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: Restore
+      inputs:
+        command: restore
+        projects: '**/*.csproj'    
+
+    - task: DotNetCoreCLI@2
+      displayName: publish
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: '**/*.csproj'
+        arguments: '--configuration Release --output $(build.artifactstagingdirectory)'        
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Csharp Function Artifact: drop'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: arm'
+      inputs:
+        PathtoPublish: "$(System.DefaultWorkingDirectory)/deploy"
+        ArtifactName: arm
+
+- stage: Dev
+  jobs:
+  - job: Deploy
+    pool:
+      vmImage: windows-2019  
+    steps:
+    - template: .devops/arm-steps.yml 
+      parameters: 
+        environment: dev
+        serviceConnection: $(DevSubscriptionConnection)
+        
+    - template: .devops/app-steps.yml 
+      parameters: 
+        environment: dev
+        serviceConnection: $(DevSubscriptionConnection)        

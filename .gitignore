@@ -1,0 +1,11 @@
+# Azure Functions artifacts
+bin
+obj
+local.settings.json
+.vscode
+local.settings.json
+test
+.vs/*
+.vs/*
+
+output/

@@ -1,0 +1,16 @@
+steps:
+
+- task: DownloadBuildArtifacts@0
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    artifactName: 'drop'
+    downloadPath: '$(System.DefaultWorkingDirectory)'
+
+- task: AzureWebApp@1
+  displayName: 'Application Deployment'
+  inputs:
+    azureSubscription: ${{ parameters.serviceConnection }}
+    appName: project-name-${{ parameters.environment }}-app
+    package: '$(System.DefaultWorkingDirectory)/drop/*.zip'
+    deploymentMethod: 'auto'
